@@ -1,0 +1,66 @@
+# Variables de entorno y API Keys
+.env
+.env.local
+.env.*.local
+*.env
+
+# Backend API (Node.js)
+back_notar_api/node_modules/
+back_notar_api/package-lock.json
+back_notar_api/.env
+back_notar_api/.env.local
+back_notar_api/npm-debug.log*
+back_notar_api/yarn-debug.log*
+back_notar_api/yarn-error.log*
+
+# Servicio de IA (Python)
+ia_service/venv/
+ia_service/env/
+ia_service/.env
+ia_service/.env.local
+ia_service/__pycache__/
+ia_service/**/__pycache__/
+ia_service/*.py[cod]
+ia_service/*$py.class
+ia_service/*.so
+ia_service/.Python
+ia_service/build/
+ia_service/develop-eggs/
+ia_service/dist/
+ia_service/downloads/
+ia_service/eggs/
+ia_service/.eggs/
+ia_service/lib/
+ia_service/lib64/
+ia_service/parts/
+ia_service/sdist/
+ia_service/var/
+ia_service/wheels/
+ia_service/*.egg-info/
+ia_service/.installed.cfg
+ia_service/*.egg
+
+# IDEs y editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Sistema operativo
+Thumbs.db
+.DS_Store
+
+# Archivos temporales
+*.tmp
+*.temp
+.cache/
+
