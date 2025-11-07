@@ -18,17 +18,20 @@ class Racha {
     `;
     const checkResult = await pool.query(checkQuery, [id_usuario]);
     
-    if (checkResult.rows[0].count > 0) {
-      // Incrementar racha
+    const countToday = parseInt(checkResult.rows[0].count, 10) || 0;
+
+    if (countToday === 1) {
+      // Incrementar racha al primer registro del día
       const updateQuery = `
         UPDATE usuario 
-        SET racha_actual = racha_actual + 1 
+        SET racha_actual = racha_actual + 1, updated_at = CURRENT_TIMESTAMP
         WHERE id_usuario = $1
         RETURNING racha_actual
       `;
       const result = await pool.query(updateQuery, [id_usuario]);
       return result.rows[0].racha_actual;
     }
+
     return await this.getCurrentStreak(id_usuario);
   }
 

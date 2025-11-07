@@ -5,17 +5,18 @@ class NotaController {
   // Crear nota
   static async createNota(req, res) {
     try {
-      const { titulo, contenido, tipo_fuente, id_tema, id_documento } = req.body;
-      const id_usuario = req.user.id;
+      const { titulo, contenido, tipo_fuente, id_tema, id_documento, id_prompt } = req.body;
+      const id_usuario = req.user.id || req.user.id_usuario;
 
-      const nuevaNota = await Nota.create(
+      const nuevaNota = await Nota.create({
         titulo,
         contenido,
         tipo_fuente,
         id_tema,
         id_usuario,
-        id_documento
-      );
+        id_documento,
+        id_prompt
+      });
 
       // Actualizar racha
       const nuevaRacha = await Racha.updateStreak(id_usuario);
@@ -51,7 +52,7 @@ class NotaController {
   // Obtener notas del usuario
   static async getNotasByUser(req, res) {
     try {
-      const id_usuario = req.user.id;
+      const id_usuario = req.user.id || req.user.id_usuario;
       const limit = parseInt(req.query.limit) || 50;
       const offset = parseInt(req.query.offset) || 0;
 

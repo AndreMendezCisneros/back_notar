@@ -38,7 +38,10 @@ module.exports = async function auth(req, res, next) {
       return res.status(401).json({ message: 'Usuario no encontrado' });
     }
 
-    req.user = user;
+    req.user = {
+      ...user,
+      id: user.id_usuario
+    };
     return next();
   } catch (error) {
     return res.status(500).json({ message: 'Error de autenticación', error: error.message });

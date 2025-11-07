@@ -22,7 +22,7 @@ async def generate_nota(request: GenerateRequest):
         )
         return {
             "status": "success",
-            "nota": resultado
+            "data": resultado
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

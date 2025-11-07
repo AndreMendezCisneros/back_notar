@@ -50,6 +50,8 @@ class AuthController {
         return res.status(401).json({ error: 'Credenciales inválidas' });
       }
 
+      await Usuario.updateLastLogin(user.id_usuario);
+
       // Generar token
       const token = jwt.sign(
         { id: user.id_usuario, email: user.email },

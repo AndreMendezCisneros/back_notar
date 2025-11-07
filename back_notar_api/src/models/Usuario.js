@@ -36,7 +36,8 @@ class Usuario {
   static async updateLastLogin(id) {
     const query = `
       UPDATE usuario 
-      SET ultimo_login = CURRENT_TIMESTAMP 
+      SET ultimo_login = CURRENT_TIMESTAMP,
+          updated_at = CURRENT_TIMESTAMP
       WHERE id_usuario = $1
     `;
     await pool.query(query, [id]);

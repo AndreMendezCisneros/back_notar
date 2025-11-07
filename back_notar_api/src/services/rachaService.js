@@ -13,7 +13,14 @@ class RachaService {
       const result = await pool.query(query);
 
       for (const user of result.rows) {
+        if (!user.ultimo_login) {
+          continue;
+        }
+
         const lastActivity = new Date(user.ultimo_login);
+        if (Number.isNaN(lastActivity.getTime())) {
+          continue;
+        }
         const now = new Date();
         const diffDays = Math.floor((now - lastActivity) / (1000 * 60 * 60 * 24));
 

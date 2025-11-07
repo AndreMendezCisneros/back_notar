@@ -1,14 +1,68 @@
 const { pool } = require('../config/database');
 
 class Nota {
+  static async getAvailableColumns(executor = pool) {
+    if (!this._notaColumnsCache) {
+      const query = `
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'nota'
+      `;
+      const result = await executor.query(query);
+      this._notaColumnsCache = result.rows.map(row => row.column_name);
+    }
+    return this._notaColumnsCache;
+  }
+
   // Crear nota (sin opción de editar después)
-  static async create(titulo, contenido, tipo_fuente, id_tema, id_usuario, id_documento = null) {
+  static async create({ titulo, contenido, tipo_fuente, id_tema, id_usuario, id_documento = null, id_prompt = null }, options = {}) {
+    const executor = options.client || pool;
+    const availableColumns = await Nota.getAvailableColumns(executor);
+
+    const insertColumns = ['titulo', 'contenido', 'tipo_fuente', 'id_usuario'];
+    const values = [titulo, contenido, tipo_fuente || 'texto', id_usuario];
+
+    if (availableColumns.includes('id_tema')) {
+      insertColumns.push('id_tema');
+      values.push(id_tema ?? null);
+    }
+
+    if (availableColumns.includes('id_documento')) {
+      insertColumns.push('id_documento');
+      values.push(id_documento ?? null);
+    }
+
+    if (availableColumns.includes('id_prompt')) {
+      insertColumns.push('id_prompt');
+      values.push(id_prompt ?? null);
+    }
+
+    if (availableColumns.includes('estado')) {
+      insertColumns.push('estado');
+      values.push('publicado');
+    }
+
+    const placeholders = insertColumns.map((_, index) => `$${index + 1}`);
+
+    const returningColumns = ['id_nota', 'titulo', 'contenido', 'fecha_creacion', 'id_usuario'];
+    if (availableColumns.includes('id_tema')) {
+      returningColumns.push('id_tema');
+    }
+    if (availableColumns.includes('id_prompt')) {
+      returningColumns.push('id_prompt');
+    }
+    if (availableColumns.includes('id_documento')) {
+      returningColumns.push('id_documento');
+    }
+
     const query = `
-      INSERT INTO nota (titulo, contenido, tipo_fuente, id_tema, id_usuario, id_documento, estado)
-      VALUES ($1, $2, $3, $4, $5, $6, 'publicado')
-      RETURNING id_nota, titulo, contenido, fecha_creacion, id_usuario
+      INSERT INTO nota (${insertColumns.join(', ')})
+      VALUES (${placeholders.join(', ')})
+      RETURNING ${returningColumns.join(', ')}
     `;
-    const result = await pool.query(query, [titulo, contenido, tipo_fuente, id_tema, id_usuario, id_documento]);
+
+    const result = await executor.query(query, values);
     return result.rows[0];
   }
 
