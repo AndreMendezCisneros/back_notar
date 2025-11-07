@@ -5,6 +5,7 @@ const Cuestionario = require('../models/Cuestionario');
 const Pregunta = require('../models/Pregunta');
 const Opcion = require('../models/Opcion');
 const Racha = require('../models/Racha');
+const Tema = require('../models/Tema');
 
 const IA_SERVICE_URL = process.env.IA_SERVICE_URL || 'http://localhost:8000';
 
@@ -47,6 +48,14 @@ class IAController {
         try {
           await client.query('BEGIN');
 
+          const availableColumns = await Nota.getAvailableColumns(client);
+
+          let temaId = id_tema;
+          if (!temaId && availableColumns.includes('id_tema')) {
+            const temaRecord = await Tema.findOrCreateByNombre({ nombre: tema }, { client });
+            temaId = temaRecord?.id_tema || null;
+          }
+
           const tituloNota = (titulo || notaGenerada.titulo || tema || 'Nota generada por IA').toString().trim();
           const contenidoNota = (notaGenerada.contenido || '').toString().trim();
 
@@ -58,7 +67,7 @@ class IAController {
             titulo: tituloNota,
             contenido: contenidoNota,
             tipo_fuente: 'ia',
-            id_tema,
+            id_tema: temaId,
             id_usuario,
             id_documento: null,
             id_prompt: null
