@@ -3,14 +3,16 @@ const bcrypt = require('bcryptjs');
 
 class Usuario {
   // Crear usuario
-  static async create(email, nombre, password) {
+  static async create(email, nombre, password, rol = 'estudiante') {
     const passwordHash = await bcrypt.hash(password, 10);
+    // Validar que el rol no exceda el límite de 20 caracteres de la BD
+    const rolValidado = rol && rol.length <= 20 ? rol : 'estudiante';
     const query = `
       INSERT INTO usuario (email, nombre, password_hash, rol, estado)
-      VALUES ($1, $2, $3, 'estudiante', 'activo')
+      VALUES ($1, $2, $3, $4, 'activo')
       RETURNING id_usuario, email, nombre, rol, racha_actual, created_at
     `;
-    const result = await pool.query(query, [email, nombre, passwordHash]);
+    const result = await pool.query(query, [email, nombre, passwordHash, rolValidado]);
     return result.rows[0];
   }
 
@@ -46,6 +48,13 @@ class Usuario {
   // Verificar contraseña
   static async verifyPassword(plainPassword, hashedPassword) {
     return await bcrypt.compare(plainPassword, hashedPassword);
+  }
+
+  // Verificar si ya existe un superadmin
+  static async existeSuperAdmin() {
+    const query = 'SELECT COUNT(*) as count FROM usuario WHERE rol = $1';
+    const result = await pool.query(query, ['superadmin']);
+    return parseInt(result.rows[0].count) > 0;
   }
 }
 

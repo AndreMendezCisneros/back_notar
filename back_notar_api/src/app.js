@@ -17,10 +17,12 @@ app.use(express.urlencoded({ extended: true }));
 const authRoutes = require('./routes/auth.routes');
 const notaRoutes = require('./routes/nota.routes');
 const iaRoutes = require('./routes/ia.routes');
+const promptRoutes = require('./routes/prompt.routes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/notas', notaRoutes);
 app.use('/api/ia', iaRoutes);
+app.use('/api/prompts', promptRoutes);
 
 // Ruta de health check
 app.get('/health', (req, res) => {

@@ -10,6 +10,7 @@ router.post('/register',
     body('email').isEmail().withMessage('Email inválido'),
     body('nombre').notEmpty().withMessage('Nombre requerido'),
     body('password').isLength({ min: 6 }).withMessage('Contraseña mínimo 6 caracteres'),
+    body('rol').optional().isIn(['estudiante', 'admin', 'superadmin']).withMessage('Rol inválido. Roles permitidos: estudiante, admin, superadmin'),
     validateRequest
   ],
   AuthController.register

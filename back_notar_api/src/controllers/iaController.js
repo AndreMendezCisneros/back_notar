@@ -6,6 +6,7 @@ const Pregunta = require('../models/Pregunta');
 const Opcion = require('../models/Opcion');
 const Racha = require('../models/Racha');
 const Tema = require('../models/Tema');
+const Prompt = require('../models/Prompt');
 
 const IA_SERVICE_URL = process.env.IA_SERVICE_URL || 'http://localhost:8000';
 
@@ -21,10 +22,31 @@ class IAController {
         return res.status(400).json({ error: 'tema es obligatorio' });
       }
 
-      // Petición a tu microservicio FastAPI
+      // Obtener el prompt activo de la base de datos
+      let promptActivo;
+      try {
+        promptActivo = await Prompt.getActive();
+      } catch (error) {
+        if (error.code === '42P01') {
+          return res.status(500).json({ 
+            error: 'La tabla "prompt_version" no existe en la base de datos. El administrador debe ejecutar el script SQL para crear la tabla.',
+            detalle: 'Tabla no encontrada. Contacte al administrador del sistema.'
+          });
+        }
+        throw error;
+      }
+      
+      if (!promptActivo) {
+        return res.status(500).json({ 
+          error: 'No hay ningún prompt configurado en el sistema. Contacte al administrador.' 
+        });
+      }
+
+      // Petición a tu microservicio FastAPI con el prompt
       const response = await axios.post(`${IA_SERVICE_URL}/api/v1/generate`, {
         tema,
-        contenido
+        contenido,
+        prompt: promptActivo.contenido_prompt
       }, {
         timeout: 60000 // 60 segundos máximo para IA
       });
@@ -70,7 +92,7 @@ class IAController {
             id_tema: temaId,
             id_usuario,
             id_documento: null,
-            id_prompt: null
+            id_prompt: promptActivo.id_version
           }, { client });
 
           for (const [indexCuestionario, cuestionario] of (Array.isArray(cuestionariosGenerados) ? cuestionariosGenerados : []).entries()) {
@@ -148,9 +170,24 @@ class IAController {
 
     } catch (error) {
       console.error('Error llamando a IA:', error.message);
+      console.error('Error completo:', error);
+      
+      // Mejorar el mensaje de error para el usuario
+      let errorMessage = 'Error al generar nota con IA';
+      let errorDetail = error.message;
+      
+      if (error.response?.data) {
+        errorDetail = error.response.data;
+        if (typeof errorDetail === 'object' && errorDetail.detail) {
+          errorMessage = errorDetail.detail;
+        } else if (typeof errorDetail === 'string') {
+          errorMessage = errorDetail;
+        }
+      }
+      
       res.status(error.response?.status || 500).json({ 
-        error: 'Error al generar nota con IA',
-        detalle: error.response?.data || error.message
+        error: errorMessage,
+        detalle: errorDetail
       });
     }
   }
