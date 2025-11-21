@@ -43,6 +43,29 @@ class Opcion {
     const result = await executor.query(query, values);
     return result.rows[0];
   }
+
+  // Obtener opción por ID
+  static async findById(id) {
+    const query = `
+      SELECT *
+      FROM opcion
+      WHERE id_opcion = $1
+    `;
+    const result = await pool.query(query, [id]);
+    return result.rows[0];
+  }
+
+  // Obtener todas las opciones de una pregunta
+  static async findByPregunta(id_pregunta) {
+    const query = `
+      SELECT *
+      FROM opcion
+      WHERE id_pregunta = $1
+      ORDER BY id_opcion ASC
+    `;
+    const result = await pool.query(query, [id_pregunta]);
+    return result.rows;
+  }
 }
 
 async function getColumns(executor) {

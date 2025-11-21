@@ -43,6 +43,29 @@ class Pregunta {
     const result = await executor.query(query, values);
     return result.rows[0];
   }
+
+  // Obtener pregunta por ID
+  static async findById(id) {
+    const query = `
+      SELECT *
+      FROM pregunta
+      WHERE id_pregunta = $1
+    `;
+    const result = await pool.query(query, [id]);
+    return result.rows[0];
+  }
+
+  // Obtener todas las preguntas de un cuestionario
+  static async findByCuestionario(id_cuestionario) {
+    const query = `
+      SELECT *
+      FROM pregunta
+      WHERE id_cuestionario = $1
+      ORDER BY id_pregunta ASC
+    `;
+    const result = await pool.query(query, [id_cuestionario]);
+    return result.rows;
+  }
 }
 
 async function getColumns(executor) {

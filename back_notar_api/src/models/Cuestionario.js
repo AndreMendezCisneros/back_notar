@@ -17,6 +17,29 @@ class Cuestionario {
     const result = await executor.query(query, values);
     return result.rows[0];
   }
+
+  // Obtener cuestionario por ID
+  static async findById(id) {
+    const query = `
+      SELECT *
+      FROM cuestionario
+      WHERE id_cuestionario = $1
+    `;
+    const result = await pool.query(query, [id]);
+    return result.rows[0];
+  }
+
+  // Obtener todos los cuestionarios de una nota
+  static async findByNota(id_nota) {
+    const query = `
+      SELECT *
+      FROM cuestionario
+      WHERE id_nota = $1
+      ORDER BY fecha_creacion ASC
+    `;
+    const result = await pool.query(query, [id_nota]);
+    return result.rows;
+  }
 }
 
 async function getColumns(executor) {
